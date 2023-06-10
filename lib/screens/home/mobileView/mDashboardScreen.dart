@@ -44,7 +44,8 @@ class mDashboardScreen extends StatelessWidget{
                             borderRadius: BorderRadius.only(bottomRight: Radius.circular(20.0), bottomLeft: Radius.circular(20.0),)
                         ),
                         child:StreamBuilder<QuerySnapshot<Map<String, dynamic>>>( // inside the <> you enter the type of your stream
-                          stream: FirebaseFirestore.instance.collection('orders').where("type", isEqualTo: "medicine").snapshots(),
+                          stream: FirebaseFirestore.instance.collection('orders').where("type", isEqualTo: "medicine")
+                              .where('status', isNotEqualTo: 'completed').snapshots(),
                           builder: (context, snapshot) {
                             if (snapshot.hasData && snapshot.data != null && snapshot.data?.size != 0) {
                               return ListView.builder(
@@ -155,7 +156,8 @@ class mDashboardScreen extends StatelessWidget{
                             borderRadius: BorderRadius.only(bottomRight: Radius.circular(20.0), bottomLeft: Radius.circular(20.0),)
                         ),
                         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>( // inside the <> you enter the type of your stream
-                          stream: FirebaseFirestore.instance.collection('orders').where("type", isEqualTo: "labTest").snapshots(),
+                          stream: FirebaseFirestore.instance.collection('orders').where("type", isEqualTo: "labTest")
+                              .where('status', isNotEqualTo: 'completed').snapshots(),
                           builder: (context, snapshot) {
                             if (snapshot.hasData && snapshot.data != null && snapshot.data?.size != 0) {
                               return ListView.builder(
@@ -212,7 +214,8 @@ class mDashboardScreen extends StatelessWidget{
                             borderRadius: BorderRadius.only(bottomRight: Radius.circular(20.0), bottomLeft: Radius.circular(20.0),)
                         ),
                         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>( // inside the <> you enter the type of your stream
-                          stream: FirebaseFirestore.instance.collection('orders').where("type", isEqualTo: "homeService").snapshots(),
+                          stream: FirebaseFirestore.instance.collection('orders').where("type", isEqualTo: "homeService")
+                              .where('status', isNotEqualTo: 'completed').snapshots(),
                           builder: (context, snapshot) {
                             if (snapshot.hasData && snapshot.data != null && snapshot.data?.size != 0) {
                               return ListView.builder(

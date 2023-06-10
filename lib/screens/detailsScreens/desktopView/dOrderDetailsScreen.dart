@@ -8,7 +8,7 @@ import '../../../utils/constants.dart';
 import '../../../utils/customWidgets.dart';
 
 class dOrderDetailsScreen extends StatelessWidget {
-  String orderID;
+  final String orderID;
 
   dOrderDetailsScreen({super.key,
     required this.orderID,

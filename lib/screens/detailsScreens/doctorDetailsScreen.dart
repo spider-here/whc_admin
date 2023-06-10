@@ -4,9 +4,9 @@ import 'desktopView/dDoctorDetailsScreen.dart';
 import 'mobileView/mDoctorDetailsScreen.dart';
 
 class doctorDetailsScreen extends StatelessWidget{
-  String doctorID;
+  final String doctorID;
 
-  doctorDetailsScreen({super.key, required this.doctorID});
+  const doctorDetailsScreen({super.key, required this.doctorID});
 
   @override
   Widget build(BuildContext context) {

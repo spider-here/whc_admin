@@ -1,39 +1,35 @@
-import 'dart:html';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:mime/mime.dart';
 
 import '../../../controllers/addMedicineController.dart';
-import '../../../database/database.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/customWidgets.dart';
 
 
 class dAddMedicineScreen extends StatelessWidget{
 
-  final customWidgets _widgets = customWidgets();
-  final database _db = database();
-
-  final TextEditingController _nameC = TextEditingController();
-  final TextEditingController _typeC = TextEditingController();
-  final TextEditingController _strengthC = TextEditingController();
-  final TextEditingController _descriptionC = TextEditingController();
-  final TextEditingController _priceC = TextEditingController();
-
-  FileUploadInputElement uploadInput = FileUploadInputElement();
-
-  late var files = [];
-  Uint8List? uploadedImage;
+  bool edit = false;
+  String id = '';
+  String name = '';
+  String type = '';
+  String strength = '';
+  String description = '';
+  String price = '';
+  String imageUrl = '';
+  bool inStock = false;
 
   dAddMedicineScreen({super.key});
+  dAddMedicineScreen.edit({super.key, required this.edit, required this.id, required this.name, required this.type,
+  required this.strength, required this.description, required this.price, required this.imageUrl, required this.inStock});
+
+  final customWidgets _widgets = customWidgets();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add Medicine"),
+        title: edit? const Text("Edit Medicine") : const Text("Add Medicine"),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -46,6 +42,9 @@ class dAddMedicineScreen extends StatelessWidget{
             child: GetBuilder(
                 init: addMedicineController(),
                 builder: (getC) {
+                  if(edit){
+                    getC.medicineInStock = inStock;
+                  }
                   return Container(
                     height: MediaQuery.of(context).size.height,
                     width: MediaQuery.of(context).size.width,
@@ -56,20 +55,20 @@ class dAddMedicineScreen extends StatelessWidget{
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Card(
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20.0),
                                 ),
                                 elevation: 2.0,
-                                child: files.length == 1
+                                child: getC.files.length == 1
                                     ? Container(
                                   height: 200.0,
                                   width: 200.0,
                                   decoration: BoxDecoration(
                                       image: DecorationImage(
-                                          image: MemoryImage(uploadedImage!),
+                                          image: MemoryImage(getC.capturedImage!),
                                           fit: BoxFit.contain)),
                                   child: Center(
                                     child: Card(
@@ -81,31 +80,7 @@ class dAddMedicineScreen extends StatelessWidget{
                                         child: TextButton(
                                           child: const Text("Add Image"),
                                           onPressed: () {
-                                            uploadInput.click();
-                                            uploadInput.onChange.listen((e) {
-                                              // read file content as dataURL
-                                              files = uploadInput.files!;
-                                              if (files.length == 1) {
-                                                final file = files[0];
-                                                FileReader reader =
-                                                FileReader();
-                                                reader.onLoadEnd.listen((e) {
-                                                  uploadedImage = reader
-                                                      .result as Uint8List?;
-                                                  getC.update();
-                                                });
-
-                                                reader.onError
-                                                    .listen((fileEvent) {
-                                                  const Text(
-                                                      "Some Error occured while reading the file");
-                                                  getC.update();
-                                                });
-
-                                                reader
-                                                    .readAsArrayBuffer(file);
-                                              }
-                                            });
+                                            getC.viewImageFromDevice();
                                           },
                                         )),
                                   ),
@@ -115,10 +90,10 @@ class dAddMedicineScreen extends StatelessWidget{
                                   width: 200.0,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(20.0),
-                                    // image: DecorationImage(
-                                    //     image: NetworkImage(
-                                    //         "https://static.remove.bg/sample-gallery/graphics/bird-thumbnail.jpg"),
-                                    //     fit: BoxFit.contain)
+                                    image: DecorationImage(
+                                        image: NetworkImage(
+                                            imageUrl),
+                                        fit: BoxFit.contain)
                                   ),
                                   child: Center(
                                     child: Card(
@@ -130,29 +105,7 @@ class dAddMedicineScreen extends StatelessWidget{
                                         child: TextButton(
                                           child: const Text("Add Image"),
                                           onPressed: () {
-                                            uploadInput.click();
-                                            uploadInput.onChange.listen((e) {
-                                              // read file content as dataURL
-                                              files = uploadInput.files!;
-                                              if (files.length == 1) {
-                                                final file = files[0];
-                                                FileReader reader =
-                                                FileReader();
-                                                reader.onLoadEnd.listen((e) {
-                                                  uploadedImage = reader
-                                                      .result as Uint8List?;
-                                                  getC.update();
-                                                });
-                                                reader.onError
-                                                    .listen((fileEvent) {
-                                                  const Text(
-                                                      "Some Error occured while reading the file");
-                                                  getC.update();
-                                                });
-                                                reader
-                                                    .readAsArrayBuffer(file);
-                                              }
-                                            });
+                                            getC.viewImageFromDevice();
                                           },
                                         )),
                                   ),
@@ -161,21 +114,86 @@ class dAddMedicineScreen extends StatelessWidget{
                             SizedBox(
                               height: 200.0,
                               width: 500.0,
-                              child: Column(
+                              child: edit?
+                              Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   _widgets.addProductTextField(
-                                    controller: _nameC, label: "Name",),
+                                    readOnly: getC.progressVisibility,
+                                    controller: getC.nameC..text = name, label: "Name",),
                                   _widgets.addProductTextField(
-                                    controller: _typeC, label: "Type",),
+                                    readOnly: getC.progressVisibility,
+                                    controller: getC.typeC..text = type, label: "Type",),
                                   _widgets.addProductTextField(
-                                    controller: _strengthC, label: "Strength",),
+                                    readOnly: getC.progressVisibility,
+                                    controller: getC.strengthC..text = strength, label: "Strength",),
                                   _widgets.addProductNumberField(
-                                    controller: _priceC, label: "Price",),
+                                    readOnly: getC.progressVisibility,
+                                    controller: getC.priceC..text = price, label: "Price",),
+                                ],
+                              )
+                              :Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  _widgets.addProductTextField(
+                                    readOnly: getC.progressVisibility,
+                                    controller: getC.nameC, label: "Name",),
+                                  _widgets.addProductTextField(
+                                    readOnly: getC.progressVisibility,
+                                    controller: getC.typeC, label: "Type",),
+                                  _widgets.addProductTextField(
+                                    readOnly: getC.progressVisibility,
+                                    controller: getC.strengthC, label: "Strength",),
+                                  _widgets.addProductNumberField(
+                                    readOnly: getC.progressVisibility,
+                                    controller: getC.priceC, label: "Price",),
                                 ],
                               ),
-                            )
+                            ),
+                            const Spacer(),
+                            Visibility(
+                              visible: edit && getC.addServiceButtonVisibility,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 20.0),
+                                child: OutlinedButton(
+                                  onPressed: () {
+                                    Widget cancelButton = TextButton(
+                                      child: const Text("Cancel"),
+                                      onPressed: () {
+                                        Get.back();
+                                      },
+                                    );
+                                    Widget continueButton = ElevatedButton(
+                                      child: const Text("Delete"),
+                                      onPressed: () async {
+                                        getC.deleteMedicine(id: id, imageUrl: imageUrl).then((value) => Get.back())
+                                            .onError((error, stackTrace) => Get.snackbar("Error", "Cannot delete at this moment."));
+                                      },
+                                    );
+                                    AlertDialog alert = AlertDialog(
+                                      title: const Text("Confirm"),
+                                      content: const Text(
+                                          "Are you sure you want to delete this medicine?"),
+                                      actions: [
+                                        cancelButton,
+                                        continueButton,
+                                      ],
+                                    );
+
+                                    // show the dialog
+                                    showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return alert;
+                                      },
+                                    );
+                                  },
+                                  child: const Text("Delete Medicine"),
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                         Container(
@@ -185,11 +203,20 @@ class dAddMedicineScreen extends StatelessWidget{
                               ),
                               borderRadius: BorderRadius.circular(20.0)),
                           padding: const EdgeInsets.all(20.0),
-                          child: TextField(
-                            controller: _descriptionC,
+                          child: edit?TextField(
+                            controller: getC.descriptionC..text = description,
                             maxLines: 6,
                             maxLength: 100,
                             keyboardType: TextInputType.multiline,
+                            readOnly: getC.progressVisibility,
+                            decoration: const InputDecoration(
+                                labelText: "Description", border: InputBorder.none),)
+                              :TextField(
+                            controller: getC.descriptionC,
+                            maxLines: 6,
+                            maxLength: 100,
+                            keyboardType: TextInputType.multiline,
+                            readOnly: getC.progressVisibility,
                             decoration: const InputDecoration(
                                 labelText: "Description", border: InputBorder.none),
                           ),
@@ -229,76 +256,14 @@ class dAddMedicineScreen extends StatelessWidget{
                               visible: getC.addServiceButtonVisibility,
                               child: ElevatedButton(
                                   onPressed: () async {
-                                    if (_nameC.text.length != 0 &&
-                                        _typeC.text.length != 0 &&
-                                        _strengthC.text.length != 0 &&
-                                        _priceC.text.length != 0 &&
-                                        _descriptionC.text.length != 0 &&
-                                        uploadedImage!.isNotEmpty) {
-                                      var mime = lookupMimeType('', headerBytes: uploadedImage);
-                                      var extension = extensionFromMime(mime!);
-                                      if(extension == 'jpe' || extension == 'jpg' || extension == 'png'){
-                                        getC.addServiceButtonVisibility = false;
-                                        getC.progressVisibility = true;
-                                        getC.update();
-                                        await _db
-                                            .uploadImageFile(
-                                            image: uploadedImage!, imageTitle: _nameC.text)
-                                            .then((value) async => await _db
-                                            .addMedicine(
-                                            imageUrl: value,
-                                            name: _nameC.text,
-                                            type: _typeC.text,
-                                            strength: _strengthC.text,
-                                            description: _descriptionC.text,
-                                            price: int.parse(_priceC.text),
-                                            soldOut: !getC.medicineInStock
-                                        )
-                                            .then((_) {
-                                          _nameC.clear();
-                                          _typeC.clear();
-                                          _strengthC.clear();
-                                          _descriptionC.clear();
-                                          _priceC.clear();
-                                          getC.medicineInStock = true;
-                                          getC.addServiceButtonVisibility =
-                                          true;
-                                          getC.progressVisibility = false;
-                                          uploadedImage?.remove;
-                                          getC.update();
-                                        }).onError((_, __) {
-                                          getC.addServiceButtonVisibility =
-                                          true;
-                                          getC.progressVisibility = false;
-                                          getC.update();
-                                          Get.snackbar(
-                                              "Error", "Problem adding data.",
-                                              backgroundColor: kWhite);
-                                        }))
-                                            .onError((_, __) {
-                                          getC.addServiceButtonVisibility = true;
-                                          getC.progressVisibility = false;
-                                          getC.update();
-                                          Get.snackbar(
-                                              "Error", "Problem adding image.",
-                                              backgroundColor: kWhite);
-                                        });
-                                      }
-                                      else{
-                                        Get.snackbar(
-                                            "Error", "Only images with \".jpeg\" and \".png\" formats can be added.",
-                                            backgroundColor: kWhite);
-                                      }
-                                    } else if (uploadedImage!.isEmpty) {
-                                      Get.snackbar("Error", "Add Image",
-                                          backgroundColor: kWhite);
-                                    } else {
-                                      Get.snackbar(
-                                          "Error", "Please fill all fields",
-                                          backgroundColor: kWhite);
+                                    if(edit){
+                                      await getC.updateData(id: id, imageUrl: imageUrl);
+                                    }
+                                    else{
+                                      await getC.addData();
                                     }
                                   },
-                                  child: const Text("Add Medicine")),
+                                  child: edit? const Text("Save") : const Text("Add Medicine")),
                             ),
                             Visibility(
                               visible: getC.progressVisibility,

@@ -20,7 +20,7 @@ class mAddLabTestScreen extends StatelessWidget {
   final customWidgets _widgets = customWidgets();
   final database _db = database();
 
-  mAddLabTestScreen();
+  mAddLabTestScreen({super.key});
 
   mAddLabTestScreen.edit(
       {super.key,

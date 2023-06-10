@@ -10,7 +10,7 @@ import '../../detailsScreens/orderDetailsScreen.dart';
 class dDashboardScreen extends StatelessWidget{
 
   final customWidgets _widgets = customWidgets();
-  database db = database();
+  final database db = database();
 
   dDashboardScreen({super.key});
   @override

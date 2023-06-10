@@ -8,7 +8,7 @@ import '../../detailsScreens/orderDetailsScreen.dart';
 
 class mTrackOrderScreen extends StatelessWidget {
 
-  mTrackOrderScreen({super.key});
+  const mTrackOrderScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,22 +20,22 @@ class mTrackOrderScreen extends StatelessWidget {
                 stream: getC.radioGroupValue == 1
                     ? FirebaseFirestore.instance
                         .collection('orders')
-                        .where('status', isEqualTo: "Pending")
+                        .where('status', isEqualTo: "pending")
                         .snapshots()
                     : getC.radioGroupValue == 2
                         ? FirebaseFirestore.instance
                             .collection('orders')
-                            .where('status', isEqualTo: "Accepted")
+                            .where('status', isEqualTo: "accepted")
                             .snapshots()
                         : getC.radioGroupValue == 3
                             ? FirebaseFirestore.instance
                                 .collection('orders')
-                                .where('status', isEqualTo: "On the Way")
+                                .where('status', isEqualTo: "onTheWay")
                                 .snapshots()
                             : getC.radioGroupValue == 4
                                 ? FirebaseFirestore.instance
                                     .collection('orders')
-                                    .where('status', isEqualTo: "Completed")
+                                    .where('status', isEqualTo: "completed")
                                     .snapshots()
                                 : FirebaseFirestore.instance
                                     .collection('orders')
@@ -96,7 +96,6 @@ class mTrackOrderScreen extends StatelessWidget {
                         ),
                         GetBuilder(
                             init: trackOrdersController(),
-                            id: 'dataList',
                             builder: (controller) {
                               return SizedBox(
                                   height: MediaQuery.of(context).size.height -
@@ -107,9 +106,6 @@ class mTrackOrderScreen extends StatelessWidget {
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 20.0, horizontal: 24.0),
                                     itemBuilder: (context, index) {
-                                      var data = snapshot.data!.docs[index]
-                                          .data() as Map<String, dynamic>;
-                                      if (getC.searchText == "") {
                                         return Card(
                                           elevation: 2.0,
                                           child: ListTile(
@@ -155,58 +151,6 @@ class mTrackOrderScreen extends StatelessWidget {
                                             },
                                           ),
                                         );
-                                      } else if (data['name']
-                                          .toString()
-                                          .toLowerCase()
-                                          .startsWith(getC.searchText)) {
-                                        return Card(
-                                          elevation: 2.0,
-                                          child: ListTile(
-                                            leading: Tooltip(
-                                                message: "Order Number",
-                                                child: Text(
-                                                  snapshot.data!.docs[index]
-                                                      .get('orderNumber')
-                                                      .toString(),
-                                                )),
-                                            title: Text(
-                                                snapshot.data!.docs[index]
-                                                    .get('name'),
-                                                style:
-                                                    const TextStyle(fontSize: 16.0),
-                                                overflow:
-                                                    TextOverflow.ellipsis),
-                                            subtitle: Text(
-                                                snapshot.data!.docs[index]
-                                                    .get('title'),
-                                                style:
-                                                    const TextStyle(fontSize: 14.0),
-                                                overflow:
-                                                    TextOverflow.ellipsis),
-                                            trailing: Text(
-                                                getC.radioGroupValue == 0
-                                                    ? snapshot.data!.docs[index]
-                                                        .get('status')
-                                                    : snapshot.data!.docs[index]
-                                                        .get('totalAmount')
-                                                        .toString(),
-                                                style: const TextStyle(
-                                                    fontSize: 14.0,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: kPrimarySwatch),
-                                                overflow:
-                                                    TextOverflow.ellipsis),
-                                            dense: true,
-                                            onTap: () {
-                                              Get.to(() => orderDetailsScreen(
-                                                    orderID: snapshot
-                                                        .data!.docs[index].id,
-                                                  ));
-                                            },
-                                          ),
-                                        );
-                                      }
-                                      return null;
                                     },
                                   ));
                             })

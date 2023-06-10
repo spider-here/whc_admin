@@ -274,9 +274,10 @@ class customWidgets {
   // }
 
   Widget addProductTextField(
-      {required TextEditingController controller, required String label,}) {
+      {required TextEditingController controller, required String label, bool readOnly = false}) {
     return TextField(
       controller: controller,
+      readOnly: readOnly,
       decoration: InputDecoration(
         labelText: label,
       ),
@@ -286,8 +287,9 @@ class customWidgets {
 
 
   Widget addProductNumberField(
-      {required TextEditingController controller, required String label,}) {
+      {required TextEditingController controller, required String label, bool readOnly = false}) {
     return TextField(
+      readOnly: readOnly,
       controller: controller,
       inputFormatters: [
         FilteringTextInputFormatter.allow(
@@ -426,27 +428,39 @@ class customWidgets {
   
   Widget searchBar({required double width, required TextEditingController controller, required onChanged, required onSubmit}){
     return Container(
-      height: 35.0,
+      height: 50.0,
       width: width,
       margin: const EdgeInsets.all(24.0),
-      padding: const EdgeInsets.all(5.0),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20.0),
-        border: Border.all(color: kGrey, width: 1.0),
-        color: kWhite
-      ),
-      child: TextField(
-        controller: controller,
-        decoration: const InputDecoration(
-          isDense: true,
-          hintText: "Search",
-          suffixIcon: Icon(Icons.search),
-          border: InputBorder.none
-        ),
-        maxLines: 1,
-        minLines: 1,
-        onChanged: onChanged,
-        onSubmitted: onSubmit,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Text('Press enter for advanced search, advanced search is case sensitive.',
+            style: TextStyle(fontSize: 9.0, color: kGrey),),
+          Container(
+            height: 35.0,
+            width: width,
+            padding: const EdgeInsets.all(5.0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20.0),
+              border: Border.all(color: kGrey, width: 1.0),
+              color: kWhite
+            ),
+            child: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                isDense: true,
+                hintText: "Search by Name",
+                suffixIcon: Icon(Icons.search),
+                border: InputBorder.none
+              ),
+              maxLines: 1,
+              minLines: 1,
+              onChanged: onChanged,
+              onSubmitted: onSubmit,
+            ),
+          ),
+        ],
       ),
     );
   }

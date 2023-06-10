@@ -8,7 +8,7 @@ import '../../../utils/constants.dart';
 import '../../../utils/customWidgets.dart';
 
 class mDoctorDetailsScreen extends StatelessWidget{
-  String doctorID;
+  final String doctorID;
 
   mDoctorDetailsScreen({super.key, required this.doctorID});
 

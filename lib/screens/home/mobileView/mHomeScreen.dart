@@ -152,7 +152,7 @@ class mHomeScreen extends StatelessWidget {
               mMedicinesScreen(),
               mLabTestsScreen(),
               mHomeServicessScreen(),
-              trackOrderScreen()
+              const trackOrderScreen()
             ],
           ),
         ));

@@ -17,7 +17,7 @@ class dHomeServicesScreen extends StatelessWidget {
         floatingActionButton: Tooltip(
           message: "Add new",
           child: FloatingActionButton(
-            onPressed: () {Get.to(()=>const addServiceScreen());},
+            onPressed: () {Get.to(()=>addServiceScreen());},
             child: const Icon(Icons.add),
           ),
         ),
@@ -68,7 +68,23 @@ class dHomeServicesScreen extends StatelessWidget {
                       .get('facilities')
                       .toString(),
                   info3: snapshot.data!.docs[index].get('fee').toString(),
-                  onPressed: () { }, isDoctor: false,
+                  onPressed: () {
+                    Get.to(()=>addServiceScreen.edit(edit: true,
+                        id: snapshot.data!.docs[index]
+                            .get('nId')
+                            .toString(), title: snapshot.data!.docs[index]
+                            .get('title')
+                            .toString(), imageUrl: snapshot.data!.docs[index]
+                            .get('image')
+                            .toString(),
+                        hospital: snapshot.data!.docs[index]
+                            .get('hospital')
+                            .toString(), fee: snapshot.data!.docs[index]
+                            .get('fee')
+                            .toString(), facilities: snapshot.data!.docs[index]
+                            .get('facilities')
+                            .toString()));
+                  }, isDoctor: false,
               );
             }),
       );

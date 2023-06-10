@@ -13,7 +13,7 @@ class addLabTestScreen extends StatelessWidget {
   String fee = " ";
   List<DocumentSnapshot> labsInLabTest = [];
 
-  addLabTestScreen();
+  addLabTestScreen({super.key});
 
   addLabTestScreen.edit(
       {super.key,

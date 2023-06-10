@@ -9,7 +9,7 @@ import '../../../utils/customWidgets.dart';
 
 
 class dDoctorDetailsScreen extends StatelessWidget {
-  String doctorID;
+  final String doctorID;
 
   dDoctorDetailsScreen({super.key, required this.doctorID});
 

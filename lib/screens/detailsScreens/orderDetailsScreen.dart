@@ -4,9 +4,9 @@ import 'desktopView/dOrderDetailsScreen.dart';
 import 'mobileView/mOrderDetailsScreen.dart';
 
 class orderDetailsScreen extends StatelessWidget{
-  String orderID;
+  final String orderID;
 
-  orderDetailsScreen({super.key, required this.orderID});
+  const orderDetailsScreen({super.key, required this.orderID});
 
   @override
   Widget build(BuildContext context) {

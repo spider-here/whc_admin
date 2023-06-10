@@ -106,12 +106,12 @@ class dHomeScreen extends StatelessWidget{
                 child: PageView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _getC.pageController,
-                  children: [
-                    const dashboardScreen(),
-                    const doctorsScreen(),
-                    const medicinesScreen(),
-                    const labTestsScreen(),
-                    const homeServicesScreen(),
+                  children: const [
+                    dashboardScreen(),
+                    doctorsScreen(),
+                    medicinesScreen(),
+                    labTestsScreen(),
+                    homeServicesScreen(),
                     trackOrderScreen()
                   ],
                 ),
@@ -137,10 +137,10 @@ class dHomeScreen extends StatelessWidget{
                   padding: const EdgeInsets.only(bottom: 5.0, top: 5.0),
                   height: 30.0,
                   width: 100.0,
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    children: const [
+                    children: [
                       Icon(Icons.logout, size: 18.0,),
                       Padding(padding: EdgeInsets.only(left: 5.0)),
                       Text("Logout", style: TextStyle(fontSize: 16.0),),

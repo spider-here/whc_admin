@@ -5,10 +5,10 @@ import '../database/database.dart';
 class orderDetailsController extends GetxController{
 
   final statusText = [
-    'Pending',
-    'Accepted',
-    'On the Way',
-    'Completed',
+    'pending',
+    'accepted',
+    'onTheWay',
+    'completed',
   ];
 
   final database _db = database();
@@ -25,13 +25,13 @@ class orderDetailsController extends GetxController{
   }
 
   int getOrderStatusIndex(String snapshot) {
-    if (snapshot == "Accepted") {
+    if (snapshot == "accepted") {
       dropDownMenuValue.value = 1;
       return 1;
-    } else if (snapshot == "On the Way") {
+    } else if (snapshot == "onTheWay") {
       dropDownMenuValue.value = 2;
       return 2;
-    } else if (snapshot == "Completed") {
+    } else if (snapshot == "completed") {
       dropDownMenuValue.value = 3;
       return 3;
     } else {
@@ -44,7 +44,7 @@ class orderDetailsController extends GetxController{
     updateButtonVisibility.value = false;
     _db.updateOrderStatus(orderID: orderID, status: status).then((value){
       updateButtonVisibility.value = false;
-    }).catchError((){
+    }).onError((_,__){
       Get.snackbar("Error", "Problem: Status not updated.");
       updateButtonVisibility.value = true;
     });

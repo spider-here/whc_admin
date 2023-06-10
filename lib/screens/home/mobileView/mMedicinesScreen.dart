@@ -18,7 +18,7 @@ class mMedicinesScreen extends StatelessWidget{
       floatingActionButton: Tooltip(
         message: "Add new medicine",
         child: FloatingActionButton(
-          onPressed: () {Get.to(()=>const addMedicineScreen()); },
+          onPressed: () {Get.to(()=>addMedicineScreen()); },
           child: const Icon(Icons.add),
         ),
       ),
@@ -72,7 +72,39 @@ class mMedicinesScreen extends StatelessWidget{
                                 .get('soldOut') == true ? 'Out of Stock' : '',
                             info3: 'Rs.${snapshot.data!.docs[index].get(
                                 'pricePerPack')}',
-                            onPressed: () {},
+                            onPressed: () {Get.to(() =>
+                                addMedicineScreen.edit(
+                                  edit: true,
+                                  id: snapshot.data!.docs[index].get('mId'),
+                                  name: snapshot
+                                      .data!.docs[index]
+                                      .get('name')
+                                      .toString(),
+                                  type: snapshot
+                                      .data!.docs[index]
+                                      .get('type')
+                                      .toString(),
+                                  strength: snapshot
+                                      .data!.docs[index]
+                                      .get('strength')
+                                      .toString(),
+                                  description: snapshot
+                                      .data!.docs[index]
+                                      .get(
+                                      'description')
+                                      .toString(),
+                                  price: snapshot
+                                      .data!.docs[index]
+                                      .get('pricePerPack')
+                                      .toString(),
+                                  imageUrl: snapshot
+                                      .data!.docs[index]
+                                      .get('image')
+                                      .toString(),
+                                  inStock: !snapshot
+                                      .data!.docs[index]
+                                      .get('soldOut'),
+                                ));},
                             isDoctor: false
                         );
                       }

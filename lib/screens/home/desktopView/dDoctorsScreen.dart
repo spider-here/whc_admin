@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:whc_admin/controllers/generalSearchController.dart';
+import 'package:whc_admin/utils/extensions.dart';
 
 import '../../../utils/customWidgets.dart';
 import '../../detailsScreens/doctorDetailsScreen.dart';
@@ -24,7 +25,9 @@ class dDoctorsScreen extends StatelessWidget {
                 return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                     stream: FirebaseFirestore.instance
                         .collection('doctors').where('isProfileComplete', isEqualTo: true).where(
-                        'name', isEqualTo: controller.searchText)
+                        'name', whereIn: [controller.searchText.trim().toUpperCase(),
+                      controller.searchText.trim().toLowerCase(), controller.searchText.trim().camelCase,
+                      controller.searchText.trim().capitalizeFirst, controller.searchText.trim().capitalizeByWord()])
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
