@@ -3,10 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:get/route_manager.dart';
-import '../screens/home/homeScreen.dart';
+import '../screens/home/home_screen.dart';
 import '../screens/landing/landing.dart';
 
-class authentication{
+class Authentication{
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final CollectionReference _extraAuth =
   FirebaseFirestore.instance.collection('admins');
@@ -18,7 +18,7 @@ class authentication{
       await _auth.signInWithEmailAndPassword(email: email, password: password).then((value) async {
         QuerySnapshot snapshot = await _extraAuth.where('uid', isEqualTo: value.user?.uid).get();
         if(snapshot.docs.isNotEmpty){
-          Get.offAll(()=>homeScreen());
+          Get.offAll(()=>HomeScreen());
         }
         else {
           return Get.snackbar("Error", "User not found");
@@ -59,7 +59,7 @@ class authentication{
   }
 
   Future signOutUser() async {
-    await _auth.signOut().then((value) => Get.offAll(()=>const landing()));
+    await _auth.signOut().then((value) => Get.offAll(()=>const Landing()));
   }
 
 }
