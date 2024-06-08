@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:get/route_manager.dart';
+import 'package:whc_admin/screens/login.dart';
 import '../screens/home/home_screen.dart';
-import '../screens/landing/landing.dart';
 
 class Authentication{
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -59,7 +59,7 @@ class Authentication{
   }
 
   Future signOutUser() async {
-    await _auth.signOut().then((value) => Get.offAll(()=>const Landing()));
+    await _auth.signOut().then((value) => Get.offAll(()=>const Login()));
   }
 
 }

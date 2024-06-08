@@ -186,18 +186,17 @@ class Database {
       'description': description.trim()
     });
   }
-  
-  Future<void> updateHomeServiceAndImage(
-      {required String id,
-        required String imageUrl,
-      required String title,
-      required String hospital,
-      required String facilities,
-        required int fee}) async {
-    final CollectionReference<Map<String, dynamic>> servRef =
-        FirebaseFirestore.instance.collection('nursing');
-    return await servRef.doc(id).update({
-      'image': imageUrl.trim(),
+
+  Future<void> updateHomeServiceDetailsOnly({
+    required String id,
+    required String title,
+    required String hospital,
+    required String facilities,
+    required int fee,
+  }) async {
+    final DocumentReference<Map<String, dynamic>> servRef =
+    FirebaseFirestore.instance.collection('nursing').doc(id);
+    await servRef.update({
       'title': title.trim(),
       'hospital': hospital.trim(),
       'fee': fee,
@@ -205,22 +204,24 @@ class Database {
     });
   }
 
-  Future<void> updateHomeServiceDetailsOnly(
-      {required String id,
-        required String title,
-        required String hospital,
-        required String facilities,
-        required int fee}) async {
+  Future<void> updateHomeServiceAndImage({
+    required String id,
+    required String imageUrl,
+    required String title,
+    required String hospital,
+    required String facilities,
+    required int fee,
+  }) async {
     final DocumentReference<Map<String, dynamic>> servRef =
-        FirebaseFirestore.instance.collection('nursing').doc(id);
-    return await servRef.update({
+    FirebaseFirestore.instance.collection('nursing').doc(id);
+    await servRef.update({
+      'image': imageUrl.trim(),
       'title': title.trim(),
       'hospital': hospital.trim(),
       'fee': fee,
       'facilities': facilities.trim(),
     });
   }
-  
   
 
   Future<void> deleteMedicine({required String id, required String imageUrl}) async {
@@ -246,11 +247,11 @@ class Database {
   }
 
   Future<String> uploadImageFile(
-      {required Uint8List image, required String imageTitle, required String path}) async {
+      {required Uint8List? image, required String imageTitle, required String path}) async {
     final Reference imagesRef =
         FirebaseStorage.instance.ref('$path/$imageTitle');
     TaskSnapshot imageUpload = await imagesRef.putData(
-        image, SettableMetadata(contentType: 'image/jpeg'));
+        image!, SettableMetadata(contentType: 'image/jpeg'));
 
     return imageUpload.ref.getDownloadURL();
   }

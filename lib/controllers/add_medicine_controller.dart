@@ -9,9 +9,9 @@ import '../database/database.dart';
 import '../utils/constants.dart';
 
 class AddMedicineController extends GetxController{
-  bool medicineInStock = true;
-  bool addServiceButtonVisibility = true;
-  bool progressVisibility = false;
+  RxBool medicineInStock = true.obs;
+  RxBool addServiceButtonVisibility = true.obs;
+  RxBool progressVisibility = false.obs;
 
   final Database _db = Database();
 
@@ -23,79 +23,110 @@ class AddMedicineController extends GetxController{
 
   FileUploadInputElement uploadInput = FileUploadInputElement();
 
-  late var files = [];
-  Uint8List? capturedImage;
+  RxList files = <File>[].obs;
+  Rx<Uint8List?> capturedImage = Rx<Uint8List?>(Uint8List(0));
 
   Future<void> addData() async {
-    if (nameC.text.length != 0 &&
-        typeC.text.length != 0 &&
-        strengthC.text.length != 0 &&
-        priceC.text.length != 0 &&
-        descriptionC.text.length != 0 &&
-        capturedImage!.isNotEmpty) {
-      var mime = lookupMimeType('', headerBytes: capturedImage);
-      var extension = extensionFromMime(mime!);
-      if(extension == 'jpe' || extension == 'jpg' || extension == 'png'){
-        addServiceButtonVisibility = false;
-        progressVisibility = true;
-        update();
-        await _db
-            .uploadImageFile(
-            image: capturedImage!, imageTitle: nameC.text, path: 'medicine')
-            .then((value) async => await _db
-            .addMedicine(
-            imageUrl: value,
-            name: nameC.text,
-            type: typeC.text,
-            strength: strengthC.text,
-            description: descriptionC.text,
-            price: int.parse(priceC.text),
-            soldOut: !medicineInStock
-        )
-            .then((_) {
-          nameC.clear();
-          typeC.clear();
-          strengthC.clear();
-          descriptionC.clear();
-          priceC.clear();
-          medicineInStock = true;
-          addServiceButtonVisibility =
-          true;
-          progressVisibility = false;
-          capturedImage?.remove;
-          update();
-        }).onError((_, __) {
-          addServiceButtonVisibility =
-          true;
-          progressVisibility = false;
-          update();
+    try {
+      if (nameC.text.isNotEmpty &&
+          typeC.text.isNotEmpty &&
+          strengthC.text.isNotEmpty &&
+          priceC.text.isNotEmpty &&
+          descriptionC.text.isNotEmpty &&
+          capturedImage.value != null &&
+          capturedImage.value!.isNotEmpty) {
+
+        String name = nameC.text;
+        String type = typeC.text;
+        String strength = strengthC.text;
+        String description = descriptionC.text;
+        int price = int.parse(priceC.text);
+
+        var mime = lookupMimeType('', headerBytes: capturedImage.value!);
+        if (mime == null) {
+          throw Exception("MIME type is null");
+        }
+        var extension = extensionFromMime(mime);
+        if (extension == 'jpe' || extension == 'jpg' || extension == 'png') {
+          addServiceButtonVisibility.value = false;
+          progressVisibility.value = true;
+
+          try {
+            String imageUrl = await _db.uploadImageFile(
+              image: capturedImage.value!,
+              imageTitle: nameC.text,
+              path: 'medicine',
+            );
+
+            if (imageUrl.isNotEmpty) {
+              await _db.addMedicine(
+                imageUrl: imageUrl,
+                name: name,
+                type: type,
+                strength: strength,
+                description: description,
+                price: price,
+                soldOut: !medicineInStock.value,
+              ).then((_) {
+                nameC.clear();
+                typeC.clear();
+                strengthC.clear();
+                descriptionC.clear();
+                priceC.clear();
+                medicineInStock.value = true;
+                capturedImage.value = null;
+              }).onError((_, __) {
+                addServiceButtonVisibility.value = true;
+                progressVisibility.value = false;
+                Get.snackbar(
+                  "Error", "Problem adding data.",
+                  backgroundColor: kWhite,
+                );
+              });
+            } else {
+              Get.snackbar(
+                "Error", "Image URL is empty.",
+                backgroundColor: kWhite,
+              );
+            }
+
+            addServiceButtonVisibility.value = true;
+            progressVisibility.value = false;
+          } catch (e) {
+            addServiceButtonVisibility.value = true;
+            progressVisibility.value = false;
+            Get.snackbar(
+              "Error", "Problem adding data: ${e.toString()}",
+              backgroundColor: kWhite,
+            );
+          }
+
+        } else {
           Get.snackbar(
-              "Error", "Problem adding data.",
-              backgroundColor: kWhite);
-        }))
-            .onError((_, __) {
-          addServiceButtonVisibility = true;
-          progressVisibility = false;
-          update();
-          Get.snackbar(
-              "Error", "Problem adding image.",
-              backgroundColor: kWhite);
-        });
-      }
-      else{
-        Get.snackbar(
             "Error", "Only images with \".jpeg\" and \".png\" formats can be added.",
-            backgroundColor: kWhite);
-      }
-    } else if (capturedImage!.isEmpty) {
-      Get.snackbar("Error", "Add Image",
-          backgroundColor: kWhite);
-    } else {
-      Get.snackbar(
+            backgroundColor: kWhite,
+          );
+        }
+      } else if (capturedImage.value == null || capturedImage.value!.isEmpty) {
+        Get.snackbar("Error", "Add Image",
+          backgroundColor: kWhite,
+        );
+      } else {
+        Get.snackbar(
           "Error", "Please fill all fields",
-          backgroundColor: kWhite);
+          backgroundColor: kWhite,
+        );
+      }
+    } catch (e) {
+      addServiceButtonVisibility.value = true;
+      progressVisibility.value = false;
+      Get.snackbar(
+        "Error", "An unexpected error occurred: ${e.toString()}",
+        backgroundColor: kWhite,
+      );
     }
   }
+
 
   Future<void> updateData({required String id, required String imageUrl}) async {
     if(nameC.text.isNotEmpty &&
@@ -103,10 +134,9 @@ class AddMedicineController extends GetxController{
         strengthC.text.isNotEmpty &&
         priceC.text.isNotEmpty &&
         descriptionC.text.isNotEmpty) {
-    addServiceButtonVisibility = false;
-    progressVisibility = true;
-    update();
-    if (capturedImage != null) {
+    addServiceButtonVisibility.value = false;
+    progressVisibility.value = true;
+    if (capturedImage.value!.isNotEmpty) {
       await updateWithImage(id: id, imageUrl: imageUrl).then((value) => Get.back()).onError((_, __) {
         Get.snackbar(
             "Error", "Problem adding data.",
@@ -126,31 +156,28 @@ class AddMedicineController extends GetxController{
     "Error", "Please fill all fields",
     backgroundColor: kWhite);
     }
-    addServiceButtonVisibility = true;
-    progressVisibility = false;
-    update();
+    addServiceButtonVisibility.value = true;
+    progressVisibility.value = false;
   }
 
   void viewImageFromDevice(){
     uploadInput.click();
     uploadInput.onChange.listen((e) {
       // read file content as dataURL
-      files = uploadInput.files!;
+      files.assignAll(uploadInput.files!);
       if (files.length == 1) {
         final file = files[0];
         FileReader reader =
         FileReader();
         reader.onLoadEnd.listen((e) {
-          capturedImage = reader
-              .result as Uint8List?;
-          update();
+          capturedImage.value = (reader
+              .result as Uint8List?)!;
         });
 
         reader.onError
             .listen((fileEvent) {
           const Text(
               "Some Error occured while reading the file");
-          update();
         });
 
         reader
@@ -166,12 +193,12 @@ class AddMedicineController extends GetxController{
   }
 
   Future<void> updateWithImage({required String id, required String imageUrl}) async {
-      var mime = lookupMimeType('', headerBytes: capturedImage);
+      var mime = lookupMimeType('', headerBytes: capturedImage.value);
       var extension = extensionFromMime(mime!);
       if(extension == 'jpe' || extension == 'jpg' || extension == 'png'){
         await _db
             .uploadImageFile(
-            image: capturedImage!, imageTitle: nameC.text, path: 'medicines')
+            image: capturedImage.value!, imageTitle: nameC.text, path: 'medicines')
             .then((value) async => await _db
             .updateMedicineAndImage(
           id: id,
@@ -181,11 +208,10 @@ class AddMedicineController extends GetxController{
           strength: strengthC.text,
           description: descriptionC.text,
           price: int.parse(priceC.text),
-          soldOut: !medicineInStock,
+          soldOut: !medicineInStock.value,
         ).then((value) async => await _db.deleteImage(imageUrl: imageUrl))
             .then((_) {
           Get.back();
-          update();
         }).onError((_, __) {
           Get.snackbar(
               "Error", "Problem adding data.",
@@ -213,10 +239,9 @@ class AddMedicineController extends GetxController{
           strength: strengthC.text,
           description: descriptionC.text,
           price: int.parse(priceC.text),
-          soldOut: !medicineInStock
+          soldOut: !medicineInStock.value
       );
-      addServiceButtonVisibility = true;
-      progressVisibility = false;
-      update();
+      addServiceButtonVisibility.value = true;
+      progressVisibility.value = false;
     }
   }

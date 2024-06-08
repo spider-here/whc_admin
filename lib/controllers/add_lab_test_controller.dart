@@ -4,13 +4,13 @@ import 'package:get/get.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 
 import '../database/database.dart';
-import '../models/lab_tests_model.dart';
+import '../models/lab_test_types_model.dart';
 import '../utils/constants.dart';
 
 class AddLabTestController extends GetxController{
-  bool addLabButtonVisibility = true;
-  bool progressVisibility = false;
-  int dropDownValGender = 0;
+  RxBool addLabButtonVisibility = true.obs;
+  RxBool progressVisibility = false.obs;
+  RxInt dropDownValGender = 0.obs;
   LabTestType? selectedLabTestType;
 
   final TextEditingController testNameC = TextEditingController();
@@ -68,15 +68,15 @@ class AddLabTestController extends GetxController{
   }
 
   onSubmitAdd() async {
-    if (testNameC.text.length != 0 &&
-        sampleTypeC.text.length != 0 &&
-        feeC.text.length != 0 &&
-        labsController.getTags!.length != 0
+    if (testNameC.text.isNotEmpty &&
+        sampleTypeC.text.isNotEmpty &&
+        feeC.text.isNotEmpty &&
+        labsController.getTags!.isNotEmpty
         && selectedLabTestType != null) {
       final DocumentReference<Map<String, dynamic>> labTestRef =
       FirebaseFirestore.instance.collection('labTests').doc();
-      addLabButtonVisibility = false;
-      progressVisibility = true;
+      addLabButtonVisibility.value = false;
+      progressVisibility.value = true;
       update();
       await _db
           .addLabTest(
@@ -84,13 +84,13 @@ class AddLabTestController extends GetxController{
           testName: testNameC.text,
           sampleType: sampleTypeC.text,
           type: selectedLabTestType!.type,
-          testFor: dropDownValGender == 1
+          testFor: dropDownValGender.value == 1
               ? testForGender[1]
-              : dropDownValGender == 2
+              : dropDownValGender.value == 2
               ? testForGender[2]
               : testForGender[0],
           fee: int.parse(feeC.text))
-          .then((value) {
+          .then((value) async {
         labsController.getTags!
             .asMap()
             .forEach((index, element) {
@@ -100,18 +100,15 @@ class AddLabTestController extends GetxController{
                     item.contains(element)));
           }
         });
-        selectedLabNamesIndexes
-            .forEach((element) async {
-          final QuerySnapshot result =
-          await FirebaseFirestore.instance
+        for (var element in selectedLabNamesIndexes) {
+          final QuerySnapshot result = await FirebaseFirestore.instance
               .collection('labs')
-              .where('lId',
-              isEqualTo:
-              labIDs[element])
+              .where('lId', isEqualTo: labIDs[element])
               .get();
-          final List<DocumentSnapshot> documents =
-              result.docs;
-          documents.forEach((snapshot) async {
+
+          final List<DocumentSnapshot> documents = result.docs;
+
+          for (var snapshot in documents) {
             await FirebaseFirestore.instance
                 .collection('labTests')
                 .doc(labTestRef.id)
@@ -121,21 +118,19 @@ class AddLabTestController extends GetxController{
               'lId': snapshot.id,
               'name': snapshot.get('name'),
               'address': snapshot.get('address'),
-              'phoneNumber':
-              snapshot.get('phoneNumber'),
+              'phoneNumber': snapshot.get('phoneNumber'),
             }).onError((error, stackTrace) =>
-                Get.snackbar("Error",
-                    "Problem adding data.",
-                    backgroundColor: kWhite));
-          });
-        });
-        addLabButtonVisibility = true;
-        progressVisibility = false;
+                Get.snackbar("Error", "Problem adding data.", backgroundColor: kWhite)
+            );
+          }
+        }
+        addLabButtonVisibility.value = true;
+        progressVisibility.value = false;
         update();
         Get.back();
       }).onError((_, __) {
-        addLabButtonVisibility = true;
-        progressVisibility = false;
+        addLabButtonVisibility.value = true;
+        progressVisibility.value = false;
         update();
         Get.snackbar(
             "Error", "Problem adding data.",
@@ -149,11 +144,11 @@ class AddLabTestController extends GetxController{
   }
 
   onSubmitEdit({required String id}) async {
-    if (testNameC.text.length != 0 &&
-        sampleTypeC.text.length != 0 &&
-        feeC.text.length != 0 && selectedLabTestType != null) {
-      addLabButtonVisibility = false;
-      progressVisibility = true;
+    if (testNameC.text.isNotEmpty &&
+        sampleTypeC.text.isNotEmpty &&
+        feeC.text.isNotEmpty && selectedLabTestType != null) {
+      addLabButtonVisibility.value = false;
+      progressVisibility.value = true;
       update();
       await _db
           .updateLabTest(
@@ -161,14 +156,14 @@ class AddLabTestController extends GetxController{
           testName: testNameC.text,
           sampleType: sampleTypeC.text,
           type: selectedLabTestType!.type,
-          testFor: dropDownValGender == 1
+          testFor: dropDownValGender.value == 1
               ? testForGender[1]
-              : dropDownValGender == 2
+              : dropDownValGender.value == 2
               ? testForGender[2]
               : testForGender[0],
           fee: int.parse(feeC.text))
-          .then((value) {
-            if(labsController.getTags!.length != 0){
+          .then((value) async {
+            if(labsController.getTags!.isNotEmpty){
               labsController.getTags!
                   .asMap()
                   .forEach((index, element) {
@@ -178,43 +173,39 @@ class AddLabTestController extends GetxController{
                           item.contains(element)));
                 }
               });
-              selectedLabNamesIndexes
-                  .forEach((element) async {
-                final QuerySnapshot result =
-                await FirebaseFirestore.instance
+              for (int element in selectedLabNamesIndexes) {
+                final QuerySnapshot result = await FirebaseFirestore.instance
                     .collection('labs')
-                    .where('lId',
-                    isEqualTo:
-                    labIDs[element])
+                    .where('lId', isEqualTo: labIDs[element])
                     .get();
-                final List<DocumentSnapshot> documents =
-                    result.docs;
-                documents.forEach((snapshot) async {
-                  await FirebaseFirestore.instance
-                      .collection('labTests')
-                      .doc(id)
-                      .collection('labs')
-                      .doc(snapshot.id)
-                      .set({
-                    'lId': snapshot.id,
-                    'name': snapshot.get('name'),
-                    'address': snapshot.get('address'),
-                    'phoneNumber':
-                    snapshot.get('phoneNumber'),
-                  }).onError((error, stackTrace) =>
-                      Get.snackbar("Error",
-                          "Problem adding data.",
-                          backgroundColor: kWhite));
-                });
-              });
+                final List<DocumentSnapshot> documents = result.docs;
+
+                for (DocumentSnapshot snapshot in documents) {
+                  try {
+                    await FirebaseFirestore.instance
+                        .collection('labTests')
+                        .doc(id)
+                        .collection('labs')
+                        .doc(snapshot.id)
+                        .set({
+                      'lId': snapshot.id,
+                      'name': snapshot.get('name'),
+                      'address': snapshot.get('address'),
+                      'phoneNumber': snapshot.get('phoneNumber'),
+                    });
+                  } catch (error) {
+                    Get.snackbar("Error", "Problem adding data.", backgroundColor: kWhite);
+                  }
+                }
+              }
             }
-        addLabButtonVisibility = true;
-        progressVisibility = false;
+        addLabButtonVisibility.value = true;
+        progressVisibility.value = false;
         update();
         Get.back();
       }).onError((_, __) {
-        addLabButtonVisibility = true;
-        progressVisibility = false;
+        addLabButtonVisibility.value = true;
+        progressVisibility.value = false;
         update();
         Get.snackbar(
             "Error", "Problem adding data.",

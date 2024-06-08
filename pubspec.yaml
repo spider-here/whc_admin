@@ -45,6 +45,7 @@ dependencies:
   image_picker_for_web: ^2.1.12
   mime: ^1.0.4
   textfield_tags: ^2.0.2
+  tab_indicator_styler: ^2.0.0
 
 dev_dependencies:
   flutter_test:
